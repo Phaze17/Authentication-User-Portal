@@ -1,0 +1,688 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Dashboard - Phaze17 Client Portal</title>
+    <link href="./dist/css/tabler.css?1752393272" rel="stylesheet" />
+    <link href="./dist/css/tabler-flags.css?1752393272" rel="stylesheet" />
+    <link href="./dist/css/tabler-payments.css?1752393272" rel="stylesheet" />
+    <link href="./dist/css/tabler-vendors.css?1752393272" rel="stylesheet" />
+    <link href="./dist/css/tabler-themes.css?1752393272" rel="stylesheet" />
+    <style>
+      @import url("https://rsms.me/inter/inter.css");
+      .p17-brand { font-weight: 800; letter-spacing: -0.5px; }
+      .p17-brand span { color: var(--tblr-primary); }
+      .service-card { transition: transform 0.15s ease, box-shadow 0.15s ease; }
+      .service-card:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,0.12); }
+      .service-card.coming-soon { opacity: 0.75; }
+      .badge-coming-soon { font-size: 0.65rem; letter-spacing: 0.05em; }
+      .welcome-bar { background: linear-gradient(135deg, var(--tblr-primary) 0%, #0a4fa8 100%); color: white; border-radius: var(--tblr-border-radius); padding: 1.5rem; }
+      .welcome-bar .text-muted { color: rgba(255,255,255,0.75) !important; }
+      .nav-bottom-spacer { flex: 1; }
+    </style>
+  </head>
+  <body class="layout-fluid">
+    <script src="./dist/js/tabler-theme.min.js?1752393272"></script>
+    <div class="page">
+
+      <!-- ========== LEFT SIDEBAR ========== -->
+      <aside class="navbar navbar-vertical navbar-expand-lg" data-bs-theme="dark">
+        <div class="container-fluid">
+          <!-- Mobile toggler -->
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#sidebar-menu" aria-controls="sidebar-menu" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+
+          <!-- Brand -->
+          <div class="navbar-brand navbar-brand-autodark">
+            <a href="./dashboard.html" class="text-decoration-none">
+              <span class="p17-brand fs-3 text-white">P<span>17</span></span>
+            </a>
+          </div>
+
+          <!-- Top-right icons (mobile) -->
+          <div class="navbar-nav flex-row d-lg-none">
+            <div class="nav-item dropdown">
+              <a href="#" class="nav-link d-flex lh-1 p-0 px-2" data-bs-toggle="dropdown" aria-label="Open user menu">
+                <span class="avatar avatar-sm" style="background-image: url(./static/avatars/000m.jpg)"></span>
+              </a>
+              <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+                <a href="./profile.html" class="dropdown-item">Profile</a>
+                <a href="./settings.html" class="dropdown-item">Settings</a>
+                <div class="dropdown-divider"></div>
+                <a href="./sign-in.html" class="dropdown-item text-danger">Sign out</a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sidebar nav -->
+          <div class="collapse navbar-collapse" id="sidebar-menu">
+            <ul class="navbar-nav pt-lg-3">
+
+              <!-- Dashboard -->
+              <li class="nav-item active">
+                <a class="nav-link" href="./dashboard.html">
+                  <span class="nav-link-icon d-md-none d-lg-inline-block">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-1"><path d="M5 12l-2 0l9 -9l9 9l-2 0"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7"/><path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6"/></svg>
+                  </span>
+                  <span class="nav-link-title">Dashboard</span>
+                </a>
+              </li>
+
+              <!-- My Services -->
+              <li class="nav-item">
+                <a class="nav-link" href="./services.html">
+                  <span class="nav-link-icon d-md-none d-lg-inline-block">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-1"><path d="M12 3l8 4.5l0 9l-8 4.5l-8 -4.5l0 -9l8 -4.5"/><path d="M12 12l8 -4.5"/><path d="M12 12l0 9"/><path d="M12 12l-8 -4.5"/></svg>
+                  </span>
+                  <span class="nav-link-title">My Services</span>
+                </a>
+              </li>
+
+              <!-- Billing -->
+              <li class="nav-item">
+                <a class="nav-link" href="./billing.html">
+                  <span class="nav-link-icon d-md-none d-lg-inline-block">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-1"><path d="M3 6m0 2a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v0a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2z"/><path d="M3 10l0 8a2 2 0 0 0 2 2h14a2 2 0 0 0 2 -2l0 -8"/><path d="M7 15l.01 0"/><path d="M11 15l2 0"/></svg>
+                  </span>
+                  <span class="nav-link-title">Billing & Payments</span>
+                </a>
+              </li>
+
+              <!-- Support -->
+              <li class="nav-item">
+                <a class="nav-link" href="./faq.html">
+                  <span class="nav-link-icon d-md-none d-lg-inline-block">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-1"><path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"/><path d="M12 17l0 .01"/><path d="M12 13.5a1.5 1.5 0 0 1 1 -1.5a2.6 2.6 0 1 0 -3 -4"/></svg>
+                  </span>
+                  <span class="nav-link-title">Help & Support</span>
+                </a>
+              </li>
+
+              <!-- Spacer pushes bottom items down -->
+              <li class="nav-item nav-bottom-spacer" style="min-height: 2rem;"></li>
+
+              <!-- Divider -->
+              <li class="nav-item">
+                <div class="nav-link text-secondary" style="pointer-events:none; font-size:0.7rem; text-transform:uppercase; letter-spacing:0.08em; opacity:0.5;">Account</div>
+              </li>
+
+              <!-- Profile -->
+              <li class="nav-item">
+                <a class="nav-link" href="./profile.html">
+                  <span class="nav-link-icon d-md-none d-lg-inline-block">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-1"><path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"/><path d="M12 10m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0"/><path d="M6.168 18.849a4 4 0 0 1 3.832 -2.849h4a4 4 0 0 1 3.834 2.855"/></svg>
+                  </span>
+                  <span class="nav-link-title">Profile</span>
+                </a>
+              </li>
+
+              <!-- Settings -->
+              <li class="nav-item">
+                <a class="nav-link" href="./settings.html">
+                  <span class="nav-link-icon d-md-none d-lg-inline-block">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-1"><path d="M10.325 4.317c.426 -1.756 2.924 -1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543 -.94 3.31 .826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756 .426 1.756 2.924 0 3.35a1.724 1.724 0 0 0 -1.066 2.573c.94 1.543 -.826 3.31 -2.37 2.37a1.724 1.724 0 0 0 -2.572 1.065c-.426 1.756 -2.924 1.756 -3.35 0a1.724 1.724 0 0 0 -2.573 -1.066c-1.543 .94 -3.31 -.826 -2.37 -2.37a1.724 1.724 0 0 0 -1.065 -2.572c-1.756 -.426 -1.756 -2.924 0 -3.35a1.724 1.724 0 0 0 1.066 -2.573c-.94 -1.543 .826 -3.31 2.37 -2.37c1 .608 2.296 .07 2.572 -1.065z"/><path d="M9 12a3 3 0 1 0 6 0a3 3 0 0 0 -6 0"/></svg>
+                  </span>
+                  <span class="nav-link-title">Settings</span>
+                </a>
+              </li>
+
+              <!-- Sign Out -->
+              <li class="nav-item">
+                <a class="nav-link text-danger" href="./sign-in.html">
+                  <span class="nav-link-icon d-md-none d-lg-inline-block">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-1"><path d="M14 8v-2a2 2 0 0 0 -2 -2h-7a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h7a2 2 0 0 0 2 -2v-2"/><path d="M9 12h12l-3 -3"/><path d="M18 15l3 -3"/></svg>
+                  </span>
+                  <span class="nav-link-title">Sign Out</span>
+                </a>
+              </li>
+
+            </ul>
+
+            <!-- User info at bottom of sidebar (desktop) -->
+            <div class="d-none d-lg-block mt-auto p-3 border-top">
+              <div class="d-flex align-items-center">
+                <span class="avatar me-2" style="background-image: url(./static/avatars/000m.jpg)"></span>
+                <div>
+                  <div class="text-white fw-medium" id="sidebar-user-name">Welcome back</div>
+                  <div class="text-secondary small" id="sidebar-user-email">—</div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </aside>
+      <!-- ========== END SIDEBAR ========== -->
+
+      <div class="page-wrapper">
+
+        <!-- PAGE HEADER -->
+        <div class="page-header d-print-none" aria-label="Page header">
+          <div class="container-xl">
+            <div class="row g-2 align-items-center">
+              <div class="col">
+                <div class="page-pretitle">Phaze17 Client Portal</div>
+                <h2 class="page-title">Dashboard</h2>
+              </div>
+              <div class="col-auto ms-auto d-print-none">
+                <div class="d-flex align-items-center gap-3">
+                  <!-- Dark mode toggle -->
+                  <a href="?theme=dark" class="nav-link px-0 hide-theme-dark" title="Enable dark mode" data-bs-toggle="tooltip" data-bs-placement="bottom">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-1"><path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z"/></svg>
+                  </a>
+                  <a href="?theme=light" class="nav-link px-0 hide-theme-light" title="Enable light mode" data-bs-toggle="tooltip" data-bs-placement="bottom">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-1"><path d="M12 12m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"/><path d="M3 12h1m8 -9v1m8 8h1m-9 8v1m-6.4 -15.4l.7 .7m12.1 -.7l-.7 .7m0 11.4l.7 .7m-12.1 -.7l-.7 .7"/></svg>
+                  </a>
+                  <!-- User avatar -->
+                  <div class="nav-item dropdown">
+                    <a href="#" class="nav-link d-flex lh-1 p-0" data-bs-toggle="dropdown" aria-label="Open user menu">
+                      <span class="avatar" style="background-image: url(./static/avatars/000m.jpg)"></span>
+                      <div class="d-none d-xl-block ps-2">
+                        <div id="header-user-name">Loading...</div>
+                        <div class="mt-1 small text-secondary" id="header-user-email">—</div>
+                      </div>
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+                      <a href="./profile.html" class="dropdown-item">Profile</a>
+                      <a href="./settings.html" class="dropdown-item">Settings</a>
+                      <div class="dropdown-divider"></div>
+                      <a href="./sign-in.html" class="dropdown-item text-danger">Sign out</a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- END PAGE HEADER -->
+
+        <!-- PAGE BODY -->
+        <div class="page-body">
+          <div class="container-xl">
+            <div class="row row-deck row-cards">
+
+              <!-- ===== WELCOME BAR ===== -->
+              <div class="col-12">
+                <div class="welcome-bar">
+                  <div class="row align-items-center">
+                    <div class="col">
+                      <h3 class="mb-1" id="welcome-heading">Welcome back 👋</h3>
+                      <p class="mb-0 text-muted">Here's a high-level view of your Phaze17 ecosystem.</p>
+                    </div>
+                    <div class="col-auto">
+                      <a href="./services.html" class="btn btn-white">Explore Services</a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ===== QUICK STATS ROW ===== -->
+              <div class="col-sm-6 col-lg-3">
+                <div class="card card-sm">
+                  <div class="card-body">
+                    <div class="row align-items-center">
+                      <div class="col-auto">
+                        <span class="bg-primary text-white avatar">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path d="M12 3l8 4.5l0 9l-8 4.5l-8 -4.5l0 -9l8 -4.5"/></svg>
+                        </span>
+                      </div>
+                      <div class="col">
+                        <div class="font-weight-medium">Active Services</div>
+                        <div class="text-secondary">0 subscribed</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-sm-6 col-lg-3">
+                <div class="card card-sm">
+                  <div class="card-body">
+                    <div class="row align-items-center">
+                      <div class="col-auto">
+                        <span class="bg-green text-white avatar">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path d="M3 6m0 2a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v0a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2z"/><path d="M3 10l0 8a2 2 0 0 0 2 2h14a2 2 0 0 0 2 -2l0 -8"/><path d="M7 15l.01 0"/><path d="M11 15l2 0"/></svg>
+                        </span>
+                      </div>
+                      <div class="col">
+                        <div class="font-weight-medium">Account Balance</div>
+                        <div class="text-secondary">$0.00</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-sm-6 col-lg-3">
+                <div class="card card-sm">
+                  <div class="card-body">
+                    <div class="row align-items-center">
+                      <div class="col-auto">
+                        <span class="bg-yellow text-white avatar">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path d="M10 5a2 2 0 1 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3h-16a4 4 0 0 0 2 -3v-3a7 7 0 0 1 4 -6"/><path d="M9 17v1a3 3 0 0 0 6 0v-1"/></svg>
+                        </span>
+                      </div>
+                      <div class="col">
+                        <div class="font-weight-medium">Notifications</div>
+                        <div class="text-secondary">Nothing new</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-sm-6 col-lg-3">
+                <div class="card card-sm">
+                  <div class="card-body">
+                    <div class="row align-items-center">
+                      <div class="col-auto">
+                        <span class="bg-red text-white avatar">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path d="M5 3m0 2a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v14a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2z"/><path d="M9 7l6 0"/><path d="M9 11l6 0"/><path d="M9 15l4 0"/></svg>
+                        </span>
+                      </div>
+                      <div class="col">
+                        <div class="font-weight-medium">Open Invoices</div>
+                        <div class="text-secondary">0 pending</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ===== SECTION HEADER: P17 ECOSYSTEM ===== -->
+              <div class="col-12 mt-2">
+                <h3 class="mb-0">P17 Ecosystem</h3>
+                <p class="text-secondary">Your full suite of Phaze17 tools and services.</p>
+              </div>
+
+              <!-- ===== SERVICE CARDS ===== -->
+
+              <!-- Cortex-17 - LIVE -->
+              <div class="col-sm-6 col-lg-4">
+                <div class="card service-card h-100">
+                  <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                      <span class="avatar bg-primary-lt me-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon text-primary"><path d="M9.5 14.5l-1.5 1.5"/><path d="M14.5 9.5l1.5 -1.5"/><path d="M12 2a4 4 0 0 1 4 4v1h1a3 3 0 0 1 0 6h-1v1a4 4 0 0 1 -8 0v-1h-1a3 3 0 0 1 0 -6h1v-1a4 4 0 0 1 4 -4z"/></svg>
+                      </span>
+                      <div>
+                        <div class="fw-bold">Cortex-17</div>
+                        <span class="badge bg-blue-lt text-blue badge-coming-soon">COMING SOON</span>
+                      </div>
+                    </div>
+                    <p class="text-secondary small mb-0">Collective intelligence infrastructure. Your entire server fleet thinks, learns, and evolves as a single superintelligent entity.</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Metacrate -->
+              <div class="col-sm-6 col-lg-4">
+                <div class="card service-card h-100 coming-soon">
+                  <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                      <span class="avatar bg-purple-lt me-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon text-purple"><path d="M3 17a1 1 0 0 1 1 -1h1a1 1 0 0 1 1 1v1a1 1 0 0 1 -1 1h-1a1 1 0 0 1 -1 -1z"/><path d="M11 15a1 1 0 0 1 1 -1h1a1 1 0 0 1 1 1v3a1 1 0 0 1 -1 1h-1a1 1 0 0 1 -1 -1z"/><path d="M19 11a1 1 0 0 1 1 -1h1a1 1 0 0 1 1 1v7a1 1 0 0 1 -1 1h-1a1 1 0 0 1 -1 -1z"/><path d="M4 6l5 -3l4 5l5 -4"/></svg>
+                      </span>
+                      <div>
+                        <div class="fw-bold">Metacrate</div>
+                        <span class="badge bg-orange-lt text-orange badge-coming-soon">COMING SOON</span>
+                      </div>
+                    </div>
+                    <p class="text-secondary small mb-0">Music library curation, automated. Organize, tag, and manage your entire catalog without the headache.</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- CuePoint -->
+              <div class="col-sm-6 col-lg-4">
+                <div class="card service-card h-100 coming-soon">
+                  <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                      <span class="avatar bg-teal-lt me-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon text-teal"><path d="M7 8l-4 4l4 4"/><path d="M17 8l4 4l-4 4"/><path d="M14 4l-4 16"/></svg>
+                      </span>
+                      <div>
+                        <div class="fw-bold">CuePoint</div>
+                        <span class="badge bg-orange-lt text-orange badge-coming-soon">COMING SOON</span>
+                      </div>
+                    </div>
+                    <p class="text-secondary small mb-0">AI-powered dev command center. Git management, repo audits, Ollama integration, and full project automation.</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Doc Jock -->
+              <div class="col-sm-6 col-lg-4">
+                <div class="card service-card h-100 coming-soon">
+                  <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                      <span class="avatar bg-cyan-lt me-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon text-cyan"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z"/><path d="M9 9l1 0"/><path d="M9 13l6 0"/><path d="M9 17l6 0"/></svg>
+                      </span>
+                      <div>
+                        <div class="fw-bold">Doc Jock</div>
+                        <span class="badge bg-orange-lt text-orange badge-coming-soon">COMING SOON</span>
+                      </div>
+                    </div>
+                    <p class="text-secondary small mb-0">Comprehensive knowledge vault and architectural planning system. Consolidates docs, detects conflicts, manages secrets across the P17 ecosystem.</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- MCP Rentals/Sales -->
+              <div class="col-sm-6 col-lg-4">
+                <div class="card service-card h-100 coming-soon">
+                  <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                      <span class="avatar bg-green-lt me-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon text-green"><path d="M4 4h6v6h-6z"/><path d="M14 4h6v6h-6z"/><path d="M4 14h6v6h-6z"/><path d="M17 17m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0"/></svg>
+                      </span>
+                      <div>
+                        <div class="fw-bold">MCP Rentals & Sales</div>
+                        <span class="badge bg-orange-lt text-orange badge-coming-soon">COMING SOON</span>
+                      </div>
+                    </div>
+                    <p class="text-secondary small mb-0">Rent or own Model Context Protocol servers for your AI stack. Pre-built MCPs for different models and operations.</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- MVP Sprint Services -->
+              <div class="col-sm-6 col-lg-4">
+                <div class="card service-card h-100 coming-soon">
+                  <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                      <span class="avatar bg-lime-lt me-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon text-lime"><path d="M5 3l14 9l-14 9v-18z"/></svg>
+                      </span>
+                      <div>
+                        <div class="fw-bold">MVP Sprint Services</div>
+                        <span class="badge bg-orange-lt text-orange badge-coming-soon">COMING SOON</span>
+                      </div>
+                    </div>
+                    <p class="text-secondary small mb-0">From idea to working MVP, fast. We sit with you, understand your concept, and build the minimum viable product to prove it.</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Campaign Genius -->
+              <div class="col-sm-6 col-lg-4">
+                <div class="card service-card h-100 coming-soon">
+                  <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                      <span class="avatar bg-pink-lt me-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon text-pink"><path d="M3 5m0 3a3 3 0 0 1 3 -3h12a3 3 0 0 1 3 3v8a3 3 0 0 1 -3 3h-12a3 3 0 0 1 -3 -3z"/><path d="M3 11l5 3l4 -3l4 3l5 -3"/></svg>
+                      </span>
+                      <div>
+                        <div class="fw-bold">Campaign Genius</div>
+                        <span class="badge bg-orange-lt text-orange badge-coming-soon">COMING SOON</span>
+                      </div>
+                    </div>
+                    <p class="text-secondary small mb-0">Marketing automation and campaign intelligence. Build, launch, and optimize campaigns without the guesswork.</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Alan Keenan Test -->
+              <div class="col-sm-6 col-lg-4">
+                <div class="card service-card h-100 coming-soon">
+                  <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                      <span class="avatar bg-indigo-lt me-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon text-indigo"><path d="M12 5m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"/><path d="M10 22v-5"/><path d="M14 22v-5"/><path d="M12 17v-6"/><path d="M10 11.2l-4.4 1.8"/><path d="M14 11.2l4.4 1.8"/></svg>
+                      </span>
+                      <div>
+                        <div class="fw-bold">Alan Keenan Test</div>
+                        <span class="badge bg-orange-lt text-orange badge-coming-soon">COMING SOON</span>
+                      </div>
+                    </div>
+                    <p class="text-secondary small mb-0">AI intelligence evaluation that goes way beyond Turing. A new benchmark for what machines can actually do.</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- OC Far -->
+              <div class="col-sm-6 col-lg-4">
+                <div class="card service-card h-100 coming-soon">
+                  <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                      <span class="avatar bg-yellow-lt me-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon text-yellow"><path d="M4 8v-2a2 2 0 0 1 2 -2h2"/><path d="M4 16v2a2 2 0 0 0 2 2h2"/><path d="M16 4h2a2 2 0 0 1 2 2v2"/><path d="M16 20h2a2 2 0 0 0 2 -2v-2"/><path d="M9 10h.01"/><path d="M15 10h.01"/><path d="M9.5 15a3.5 3.5 0 0 0 5 0"/></svg>
+                      </span>
+                      <div>
+                        <div class="fw-bold">OC Far</div>
+                        <span class="badge bg-orange-lt text-orange badge-coming-soon">COMING SOON</span>
+                      </div>
+                    </div>
+                    <p class="text-secondary small mb-0">OCR+ and way beyond. Reads text, understands context, extracts intelligence from any document or image.</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Streamsickle -->
+              <div class="col-sm-6 col-lg-4">
+                <div class="card service-card h-100 coming-soon">
+                  <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                      <span class="avatar bg-red-lt me-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon text-red"><path d="M11 19l-7 -7l7 -7"/><path d="M17 19l-7 -7l7 -7"/></svg>
+                      </span>
+                      <div>
+                        <div class="fw-bold">Streamsickle</div>
+                        <span class="badge bg-orange-lt text-orange badge-coming-soon">COMING SOON</span>
+                      </div>
+                    </div>
+                    <p class="text-secondary small mb-0">The streaming companion for DJs and creators. Go live smarter, look better, grow faster.</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Aperture Loadout -->
+              <div class="col-sm-6 col-lg-4">
+                <div class="card service-card h-100 coming-soon">
+                  <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                      <span class="avatar bg-gray-lt me-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path d="M12 12m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/><path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"/><path d="M12 3l2.598 5.5m3.832 1.5l-6.43 0m-1.463 5.5l-3.234 -5"/><path d="M12 3l-2.598 5.5m-3.832 1.5l3.215 -0.5m4.678 6l-3.234 -5"/></svg>
+                      </span>
+                      <div>
+                        <div class="fw-bold">Aperture Loadout</div>
+                        <span class="badge bg-orange-lt text-orange badge-coming-soon">COMING SOON</span>
+                      </div>
+                    </div>
+                    <p class="text-secondary small mb-0">Inventory and parts tracker for builders and makers. Know exactly what you have, what you need, and what you spent.</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Cash Tracker Plus -->
+              <div class="col-sm-6 col-lg-4">
+                <div class="card service-card h-100 coming-soon">
+                  <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                      <span class="avatar bg-green-lt me-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon text-green"><path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"/><path d="M14.8 9a2 2 0 0 0 -1.8 -1h-2a2 2 0 1 0 0 4h2a2 2 0 1 1 0 4h-2a2 2 0 0 1 -1.8 -1"/><path d="M12 6v2m0 8v2"/></svg>
+                      </span>
+                      <div>
+                        <div class="fw-bold">Cash Tracker Plus</div>
+                        <span class="badge bg-orange-lt text-orange badge-coming-soon">COMING SOON</span>
+                      </div>
+                    </div>
+                    <p class="text-secondary small mb-0">Personal finance software that actually makes sense. Track, analyze, and stay on top of your money.</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- War Room -->
+              <div class="col-sm-6 col-lg-4">
+                <div class="card service-card h-100 coming-soon">
+                  <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                      <span class="avatar bg-red-lt me-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon text-red"><path d="M7.5 7.5m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/><path d="M3 6.5v-2l2 -1l4 4l-2 3"/><path d="M9.5 9.5l5 5"/><path d="M14.5 14.5l3 3l1 -2l2 -1h2"/><path d="M6 17l5 -5"/></svg>
+                      </span>
+                      <div>
+                        <div class="fw-bold">War Room</div>
+                        <span class="badge bg-orange-lt text-orange badge-coming-soon">COMING SOON</span>
+                      </div>
+                    </div>
+                    <p class="text-secondary small mb-0">Multi-model AI chatroom. Drop in multiple AI models and let them work together on your hardest problems.</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- PulseBoard -->
+              <div class="col-sm-6 col-lg-4">
+                <div class="card service-card h-100 coming-soon">
+                  <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                      <span class="avatar bg-blue-lt me-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon text-blue"><path d="M4 4m0 2a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v1a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2z"/><path d="M4 13m0 2a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v3a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2z"/><path d="M14 4m0 2a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v3a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2z"/><path d="M14 15m0 2a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v1a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2z"/></svg>
+                      </span>
+                      <div>
+                        <div class="fw-bold">PulseBoard</div>
+                        <span class="badge bg-orange-lt text-orange badge-coming-soon">COMING SOON</span>
+                      </div>
+                    </div>
+                    <p class="text-secondary small mb-0">Project management, your way. Boards, timelines, and collaboration tools built for how you actually work.</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Fader Logic -->
+              <div class="col-sm-6 col-lg-4">
+                <div class="card service-card h-100 coming-soon">
+                  <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                      <span class="avatar bg-purple-lt me-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon text-purple"><path d="M5 8m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"/><path d="M5 8l0 13"/><path d="M5 8l14 -5"/><path d="M19 3m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"/><path d="M19 3l0 6"/><path d="M19 9m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0"/></svg>
+                      </span>
+                      <div>
+                        <div class="fw-bold">Fader Logic</div>
+                        <span class="badge bg-orange-lt text-orange badge-coming-soon">COMING SOON</span>
+                      </div>
+                    </div>
+                    <p class="text-secondary small mb-0">AI-powered DJ coach and performance intelligence. Level up your craft with real-time feedback and analysis.</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Revenue Rocket -->
+              <div class="col-sm-6 col-lg-4">
+                <div class="card service-card h-100 coming-soon">
+                  <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                      <span class="avatar bg-orange-lt me-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon text-orange"><path d="M4 13a8 8 0 0 1 7 7a6 6 0 0 0 3 -5a9 9 0 0 0 6 -8a3 3 0 0 0 -3 -3a9 9 0 0 0 -8 6a6 6 0 0 0 -5 3"/><path d="M7 14a6 6 0 0 0 -3 6a6 6 0 0 0 6 -3"/><path d="M15 9m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/></svg>
+                      </span>
+                      <div>
+                        <div class="fw-bold">Revenue Rocket</div>
+                        <span class="badge bg-orange-lt text-orange badge-coming-soon">COMING SOON</span>
+                      </div>
+                    </div>
+                    <p class="text-secondary small mb-0">Business-focused financial intelligence. Track revenue streams, spot opportunities, and accelerate growth.</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Thought Playback -->
+              <div class="col-sm-6 col-lg-4">
+                <div class="card service-card h-100 coming-soon">
+                  <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                      <span class="avatar bg-teal-lt me-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon text-teal"><path d="M3 12h1"/><path d="M12 3v1"/><path d="M7.8 7.8l-.7 -.7"/><path d="M16.2 7.8l.7 -.7"/><path d="M21 12h-1"/><path d="M15.2 15.2a4 4 0 1 0 -6.4 0a4.9 4.9 0 0 1 1.2 3h4a4.9 4.9 0 0 1 1.2 -3z"/><path d="M9 18h6"/><path d="M9 21h6"/></svg>
+                      </span>
+                      <div>
+                        <div class="fw-bold">Thought Playback</div>
+                        <span class="badge bg-orange-lt text-orange badge-coming-soon">COMING SOON</span>
+                      </div>
+                    </div>
+                    <p class="text-secondary small mb-0">Adaptive rapid thought capture for all brain types. Fast processors, slow processors — bridge the gap and never lose an idea.</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Waystation -->
+              <div class="col-sm-6 col-lg-4">
+                <div class="card service-card h-100 coming-soon">
+                  <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                      <span class="avatar bg-gray-lt me-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"/><path d="M12 12m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/></svg>
+                      </span>
+                      <div>
+                        <div class="fw-bold">Waystation</div>
+                        <span class="badge bg-orange-lt text-orange badge-coming-soon">COMING SOON</span>
+                      </div>
+                    </div>
+                    <p class="text-secondary small mb-0">Something big is coming. Details dropping soon.</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- NeuroFlow -->
+              <div class="col-sm-6 col-lg-4">
+                <div class="card service-card h-100 coming-soon">
+                  <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                      <span class="avatar bg-indigo-lt me-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon text-indigo"><path d="M3 12h3"/><path d="M12 3v3"/><path d="M7.8 7.8l-2.1 -2.1"/><path d="M16.2 7.8l2.1 -2.1"/><path d="M21 12h-3"/><path d="M18.2 16.2l2.1 2.1"/><path d="M12 21v-3"/><path d="M5.8 16.2l-2.1 2.1"/><path d="M12 12m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"/></svg>
+                      </span>
+                      <div>
+                        <div class="fw-bold">NeuroFlow</div>
+                        <span class="badge bg-orange-lt text-orange badge-coming-soon">COMING SOON</span>
+                      </div>
+                    </div>
+                    <p class="text-secondary small mb-0">N8N meets RMM. Automation infrastructure and remote management in one intelligent, connected platform.</p>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+        <!-- END PAGE BODY -->
+
+        <!-- FOOTER -->
+        <footer class="footer footer-transparent d-print-none">
+          <div class="container-xl">
+            <div class="row text-center align-items-center flex-row-reverse">
+              <div class="col-12 col-lg-auto mt-3 mt-lg-0">
+                <ul class="list-inline list-inline-dots mb-0">
+                  <li class="list-inline-item">Copyright &copy; 2026 <a href="https://phaze17.com" class="link-secondary">Phaze17</a></li>
+                  <li class="list-inline-item"><a href="./terms-of-service.html" class="link-secondary">Terms</a></li>
+                  <li class="list-inline-item"><a href="#" class="link-secondary">Privacy</a></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </footer>
+
+      </div>
+    </div>
+
+    <script src="./dist/js/tabler.min.js?1752393272"></script>
+    <script>
+      // Supabase session: populate user name/email when wired up
+      // For now, check localStorage for a dev session placeholder
+      (function() {
+        var name = localStorage.getItem('p17_user_name') || 'there';
+        var email = localStorage.getItem('p17_user_email') || '';
+        var el = document.getElementById('welcome-heading');
+        if (el) el.textContent = 'Welcome back, ' + name + ' \uD83D\uDC4B';
+        var hn = document.getElementById('header-user-name');
+        if (hn) hn.textContent = name;
+        var he = document.getElementById('header-user-email');
+        if (he) he.textContent = email;
+        var sn = document.getElementById('sidebar-user-name');
+        if (sn) sn.textContent = name;
+        var se = document.getElementById('sidebar-user-email');
+        if (se) se.textContent = email;
+      })();
+    </script>
+  </body>
+</html>
