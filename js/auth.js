@@ -20,12 +20,13 @@ export async function signUpWithEmail(email, password) {
 
 /**
  * Trigger GitHub OAuth redirect.
+ * Redirects back to /auth/callback.html which handles the PKCE code exchange.
  */
 export async function signInWithGitHub() {
   const { error } = await supabase.auth.signInWithOAuth({
     provider: 'github',
     options: {
-      redirectTo: window.location.origin + '/dashboard.html',
+      redirectTo: window.location.origin + '/auth/callback.html',
     },
   });
   if (error) console.error('GitHub OAuth error:', error.message);
