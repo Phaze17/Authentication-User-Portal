@@ -1,0 +1,903 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Phaze17 Admin</title>
+    <link href="./dist/css/tabler.css?1752393270" rel="stylesheet" />
+    <link href="./dist/css/tabler-themes.css?1752393270" rel="stylesheet" />
+    <style>
+      @import url("https://rsms.me/inter/inter.css");
+      .nav-tabs .nav-link.active { font-weight: 600; }
+      .client-card { cursor: pointer; transition: box-shadow .15s; }
+      .client-card:hover { box-shadow: 0 0 0 2px var(--tblr-primary); }
+      .client-card.selected { box-shadow: 0 0 0 2px var(--tblr-primary); background: var(--tblr-primary-lt); }
+      .section { display: none; }
+      .section.active { display: block; }
+      #toast-wrap { position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 9999; min-width: 260px; }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  </head>
+  <body>
+    <script src="./dist/js/tabler-theme.min.js?1752393270"></script>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         IMPORTANT: Paste your SERVICE ROLE key below.
+         This file runs LOCAL only — never deploy to public hosting.
+    ═══════════════════════════════════════════════════════════════ -->
+    <script>
+      const SUPABASE_URL          = 'https://ygjcmbihlaensweosszj.supabase.co';
+      const SUPABASE_SERVICE_KEY  = 'PASTE_SERVICE_ROLE_KEY_HERE';
+      const { createClient } = supabase;
+      const sb = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY, {
+        auth: { autoRefreshToken: false, persistSession: false }
+      });
+
+      // ── state ──────────────────────────────────────────────────────
+      let clients   = [];
+      let projects  = [];
+      let tickets   = [];
+      let selClient = null;
+
+      // ── toast ──────────────────────────────────────────────────────
+      function toast(msg, type = 'success') {
+        const wrap = document.getElementById('toast-wrap');
+        const el = document.createElement('div');
+        el.className = `alert alert-${type} alert-dismissible mb-2`;
+        el.innerHTML = `${msg}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>`;
+        wrap.appendChild(el);
+        setTimeout(() => el.remove(), 4000);
+      }
+
+      // ── nav ────────────────────────────────────────────────────────
+      function showSection(id) {
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('.nav-link[data-section]').forEach(l => l.classList.remove('active'));
+        document.getElementById('sec-' + id).classList.add('active');
+        document.querySelector(`.nav-link[data-section="${id}"]`).classList.add('active');
+      }
+
+      // ── helpers ────────────────────────────────────────────────────
+      function fmtDate(iso) {
+        if (!iso) return '—';
+        return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      }
+      function fmtCurrency(n) {
+        return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(n || 0);
+      }
+      const STATUS_COLORS = {
+        'active':    'bg-green-lt text-green',
+        'paused':    'bg-yellow-lt text-yellow',
+        'in review': 'bg-blue-lt text-blue',
+        'complete':  'bg-muted-lt text-muted',
+        'cancelled': 'bg-red-lt text-red',
+      };
+      const TICKET_COLORS = {
+        'open':           'bg-red-lt text-red',
+        'waiting on you': 'bg-yellow-lt text-yellow',
+        'in progress':    'bg-blue-lt text-blue',
+        'resolved':       'bg-green-lt text-green',
+      };
+      function badge(val, map) {
+        const s = (val || '').toLowerCase();
+        const cls = map[s] || 'bg-secondary-lt text-secondary';
+        return `<span class="badge ${cls}">${val || '—'}</span>`;
+      }
+      function clientOptions(selected) {
+        return clients.map(c =>
+          `<option value="${c.id}" ${c.id === selected ? 'selected' : ''}>${c.full_name || c.email}</option>`
+        ).join('');
+      }
+
+      // ══════════════════════════════════════════════════════════════
+      //  CLIENTS
+      // ══════════════════════════════════════════════════════════════
+      async function loadClients() {
+        const { data, error } = await sb.from('auth_usr_profiles').select('*').order('full_name');
+        if (error) { toast('Error loading clients: ' + error.message, 'danger'); return; }
+        clients = data || [];
+        renderClients();
+      }
+
+      function renderClients() {
+        const grid = document.getElementById('client-grid');
+        const empty = document.getElementById('client-empty');
+        grid.innerHTML = '';
+        if (!clients.length) { empty.classList.remove('d-none'); return; }
+        empty.classList.add('d-none');
+        clients.forEach(c => {
+          const col = document.createElement('div');
+          col.className = 'col-sm-6 col-lg-4';
+          col.innerHTML = `
+            <div class="card client-card ${selClient?.id === c.id ? 'selected' : ''}" data-id="${c.id}">
+              <div class="card-body">
+                <div class="d-flex align-items-center mb-2">
+                  <span class="avatar avatar-sm me-2 bg-primary-lt text-primary">${(c.full_name || c.email || '?')[0].toUpperCase()}</span>
+                  <div>
+                    <div class="fw-semibold">${c.full_name || '(no name)'}</div>
+                    <div class="text-muted small">${c.email || ''}</div>
+                  </div>
+                </div>
+                <div class="text-muted small">${c.company || ''}</div>
+                <div class="mt-2 d-flex gap-2">
+                  <button class="btn btn-sm btn-outline-primary" onclick="openEditClient('${c.id}')">Edit</button>
+                  <button class="btn btn-sm btn-outline-danger" onclick="deleteClient('${c.id}')">Delete</button>
+                </div>
+              </div>
+            </div>`;
+          grid.appendChild(col);
+        });
+        // also refresh selects in other tabs
+        refreshProjectClientSelect();
+        refreshTicketClientSelect();
+        refreshBillingClientSelect();
+      }
+
+      function openNewClient() {
+        document.getElementById('client-modal-title').textContent = 'New Client';
+        document.getElementById('client-form').reset();
+        document.getElementById('client-id-input').value = '';
+        document.getElementById('client-password-wrap').classList.remove('d-none');
+        new bootstrap.Modal(document.getElementById('clientModal')).show();
+      }
+
+      function openEditClient(id) {
+        const c = clients.find(x => x.id === id);
+        if (!c) return;
+        document.getElementById('client-modal-title').textContent = 'Edit Client';
+        document.getElementById('client-id-input').value   = c.id;
+        document.getElementById('client-email').value      = c.email || '';
+        document.getElementById('client-name').value       = c.full_name || '';
+        document.getElementById('client-company').value    = c.company || '';
+        document.getElementById('client-phone').value      = c.phone || '';
+        document.getElementById('client-password-wrap').classList.add('d-none');
+        new bootstrap.Modal(document.getElementById('clientModal')).show();
+      }
+
+      document.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('client-form').addEventListener('submit', async e => {
+          e.preventDefault();
+          const id      = document.getElementById('client-id-input').value;
+          const email   = document.getElementById('client-email').value.trim();
+          const name    = document.getElementById('client-name').value.trim();
+          const company = document.getElementById('client-company').value.trim();
+          const phone   = document.getElementById('client-phone').value.trim();
+          const pass    = document.getElementById('client-password').value;
+
+          if (id) {
+            // update profile only
+            const { error } = await sb.from('auth_usr_profiles')
+              .update({ full_name: name, company, phone })
+              .eq('id', id);
+            if (error) { toast('Update failed: ' + error.message, 'danger'); return; }
+            toast('Client updated.');
+          } else {
+            // create auth user + profile
+            const { data: newUser, error: authErr } = await sb.auth.admin.createUser({
+              email, password: pass, email_confirm: true
+            });
+            if (authErr) { toast('Auth error: ' + authErr.message, 'danger'); return; }
+            const uid = newUser.user.id;
+            await sb.from('auth_usr_profiles').upsert({ id: uid, email, full_name: name, company, phone });
+            toast('Client created! They can now sign in.');
+          }
+          bootstrap.Modal.getInstance(document.getElementById('clientModal')).hide();
+          await loadClients();
+        });
+      });
+
+      async function deleteClient(id) {
+        if (!confirm('Delete this client and ALL their data? This cannot be undone.')) return;
+        await sb.from('auth_tkt_tickets').delete().eq('user_id', id);
+        await sb.from('auth_bill_transactions').delete().eq('user_id', id);
+        await sb.from('auth_bill_budgets').delete().eq('user_id', id);
+        await sb.from('auth_proj_projects').delete().eq('user_id', id);
+        await sb.from('auth_usr_profiles').delete().eq('id', id);
+        const { error } = await sb.auth.admin.deleteUser(id);
+        if (error) { toast('Auth delete error: ' + error.message, 'danger'); return; }
+        toast('Client deleted.');
+        await loadClients();
+      }
+
+      // ══════════════════════════════════════════════════════════════
+      //  PROJECTS
+      // ══════════════════════════════════════════════════════════════
+      async function loadProjects() {
+        const { data, error } = await sb
+          .from('auth_proj_projects')
+          .select('*, auth_usr_profiles(full_name, email)')
+          .order('created_at', { ascending: false });
+        if (error) { toast('Error loading projects: ' + error.message, 'danger'); return; }
+        projects = data || [];
+        renderProjects();
+      }
+
+      function renderProjects() {
+        const tbody = document.getElementById('proj-tbody');
+        const empty = document.getElementById('proj-empty');
+        tbody.innerHTML = '';
+        if (!projects.length) { empty.classList.remove('d-none'); return; }
+        empty.classList.add('d-none');
+        projects.forEach(p => {
+          const client = p.auth_usr_profiles;
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td class="fw-semibold">${p.name || '—'}</td>
+            <td class="text-muted">${client?.full_name || client?.email || '—'}</td>
+            <td>${badge(p.status, STATUS_COLORS)}</td>
+            <td class="text-muted small">${p.description || ''}</td>
+            <td class="text-muted">${fmtDate(p.created_at)}</td>
+            <td>
+              <button class="btn btn-sm btn-outline-primary me-1" onclick="openEditProject('${p.id}')">Edit</button>
+              <button class="btn btn-sm btn-outline-danger" onclick="deleteProject('${p.id}')">Delete</button>
+            </td>`;
+          tbody.appendChild(tr);
+        });
+      }
+
+      function refreshProjectClientSelect() {
+        const sel = document.getElementById('proj-client-id');
+        if (sel) sel.innerHTML = '<option value="">— Select Client —</option>' + clientOptions();
+      }
+
+      function openNewProject() {
+        document.getElementById('proj-modal-title').textContent = 'New Project';
+        document.getElementById('proj-form').reset();
+        document.getElementById('proj-id-input').value = '';
+        refreshProjectClientSelect();
+        new bootstrap.Modal(document.getElementById('projModal')).show();
+      }
+
+      function openEditProject(id) {
+        const p = projects.find(x => x.id === id);
+        if (!p) return;
+        document.getElementById('proj-modal-title').textContent = 'Edit Project';
+        document.getElementById('proj-id-input').value    = p.id;
+        refreshProjectClientSelect();
+        document.getElementById('proj-client-id').value  = p.user_id || '';
+        document.getElementById('proj-name').value       = p.name || '';
+        document.getElementById('proj-status').value     = p.status || 'Active';
+        document.getElementById('proj-description').value = p.description || '';
+        new bootstrap.Modal(document.getElementById('projModal')).show();
+      }
+
+      document.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('proj-form').addEventListener('submit', async e => {
+          e.preventDefault();
+          const id     = document.getElementById('proj-id-input').value;
+          const uid    = document.getElementById('proj-client-id').value;
+          const name   = document.getElementById('proj-name').value.trim();
+          const status = document.getElementById('proj-status').value;
+          const desc   = document.getElementById('proj-description').value.trim();
+          if (!uid) { toast('Please select a client.', 'warning'); return; }
+          if (id) {
+            const { error } = await sb.from('auth_proj_projects').update({ name, status, description: desc }).eq('id', id);
+            if (error) { toast('Update failed: ' + error.message, 'danger'); return; }
+            toast('Project updated.');
+          } else {
+            const { error } = await sb.from('auth_proj_projects').insert({ user_id: uid, name, status, description: desc });
+            if (error) { toast('Insert failed: ' + error.message, 'danger'); return; }
+            toast('Project created.');
+          }
+          bootstrap.Modal.getInstance(document.getElementById('projModal')).hide();
+          await loadProjects();
+          await loadBudgets();
+        });
+      });
+
+      async function deleteProject(id) {
+        if (!confirm('Delete this project? Budget records tied to it will also be removed.')) return;
+        await sb.from('auth_bill_budgets').delete().eq('project_id', id);
+        const { error } = await sb.from('auth_proj_projects').delete().eq('id', id);
+        if (error) { toast('Delete failed: ' + error.message, 'danger'); return; }
+        toast('Project deleted.');
+        await loadProjects();
+      }
+
+      // ══════════════════════════════════════════════════════════════
+      //  BILLING
+      // ══════════════════════════════════════════════════════════════
+      let budgets = [], transactions = [], billingProjects = [];
+
+      async function loadBudgets() {
+        const [b, t, pr] = await Promise.all([
+          sb.from('auth_bill_budgets').select('*, auth_proj_projects(name), auth_usr_profiles(full_name, email)').order('created_at', { ascending: false }),
+          sb.from('auth_bill_transactions').select('*, auth_proj_projects(name), auth_usr_profiles(full_name, email)').order('date', { ascending: false }),
+          sb.from('auth_proj_projects').select('id, name, user_id').order('name')
+        ]);
+        budgets = b.data || [];
+        transactions = t.data || [];
+        billingProjects = pr.data || [];
+        renderBudgets();
+        renderTransactions();
+        refreshBillingProjectSelect();
+      }
+
+      function refreshBillingClientSelect() {
+        ['budget-client-id', 'txn-client-id'].forEach(id => {
+          const sel = document.getElementById(id);
+          if (sel) sel.innerHTML = '<option value="">— Select Client —</option>' + clientOptions();
+        });
+      }
+
+      function refreshBillingProjectSelect(clientId) {
+        const filtered = clientId
+          ? billingProjects.filter(p => p.user_id === clientId)
+          : billingProjects;
+        ['budget-project-id', 'txn-project-id'].forEach(id => {
+          const sel = document.getElementById(id);
+          if (sel) sel.innerHTML = '<option value="">— Select Project —</option>' +
+            filtered.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+        });
+      }
+
+      function renderBudgets() {
+        const tbody = document.getElementById('budget-tbody');
+        tbody.innerHTML = '';
+        budgets.forEach(b => {
+          const pct = b.cap > 0 ? Math.round((b.used / b.cap) * 100) : 0;
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${b.auth_proj_projects?.name || '—'}</td>
+            <td>${b.auth_usr_profiles?.full_name || b.auth_usr_profiles?.email || '—'}</td>
+            <td>${fmtCurrency(b.cap)}</td>
+            <td>${fmtCurrency(b.used)}</td>
+            <td>
+              <div class="progress progress-sm" style="min-width:80px">
+                <div class="progress-bar ${pct >= 90 ? 'bg-danger' : pct >= 70 ? 'bg-warning' : ''}" style="width:${pct}%"></div>
+              </div>
+              <div class="text-muted small">${pct}%</div>
+            </td>
+            <td>
+              <button class="btn btn-sm btn-outline-primary me-1" onclick="openEditBudget('${b.id}')">Edit</button>
+              <button class="btn btn-sm btn-outline-danger" onclick="deleteBudget('${b.id}')">Delete</button>
+            </td>`;
+          tbody.appendChild(tr);
+        });
+      }
+
+      function renderTransactions() {
+        const tbody = document.getElementById('txn-tbody');
+        tbody.innerHTML = '';
+        transactions.forEach(t => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${fmtDate(t.date)}</td>
+            <td>${t.auth_proj_projects?.name || '—'}</td>
+            <td>${t.auth_usr_profiles?.full_name || t.auth_usr_profiles?.email || '—'}</td>
+            <td>${t.description || ''}</td>
+            <td class="fw-semibold">${fmtCurrency(t.amount)}</td>
+            <td><button class="btn btn-sm btn-outline-danger" onclick="deleteTxn('${t.id}')">Delete</button></td>`;
+          tbody.appendChild(tr);
+        });
+      }
+
+      function openNewBudget() {
+        document.getElementById('budget-form').reset();
+        document.getElementById('budget-id-input').value = '';
+        refreshBillingClientSelect();
+        refreshBillingProjectSelect();
+        new bootstrap.Modal(document.getElementById('budgetModal')).show();
+      }
+
+      function openEditBudget(id) {
+        const b = budgets.find(x => x.id === id);
+        if (!b) return;
+        document.getElementById('budget-id-input').value   = b.id;
+        refreshBillingClientSelect();
+        document.getElementById('budget-client-id').value  = b.user_id || '';
+        refreshBillingProjectSelect(b.user_id);
+        document.getElementById('budget-project-id').value = b.project_id || '';
+        document.getElementById('budget-cap').value        = b.cap || '';
+        document.getElementById('budget-used').value       = b.used || '';
+        new bootstrap.Modal(document.getElementById('budgetModal')).show();
+      }
+
+      document.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('budget-client-id').addEventListener('change', function() {
+          refreshBillingProjectSelect(this.value);
+        });
+        document.getElementById('txn-client-id').addEventListener('change', function() {
+          const filtered = billingProjects.filter(p => p.user_id === this.value);
+          const sel = document.getElementById('txn-project-id');
+          sel.innerHTML = '<option value="">— Select Project —</option>' +
+            filtered.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+        });
+
+        document.getElementById('budget-form').addEventListener('submit', async e => {
+          e.preventDefault();
+          const id  = document.getElementById('budget-id-input').value;
+          const uid = document.getElementById('budget-client-id').value;
+          const pid = document.getElementById('budget-project-id').value;
+          const cap = parseFloat(document.getElementById('budget-cap').value);
+          const used = parseFloat(document.getElementById('budget-used').value) || 0;
+          if (!uid || !pid) { toast('Select client and project.', 'warning'); return; }
+          if (id) {
+            const { error } = await sb.from('auth_bill_budgets').update({ cap, used }).eq('id', id);
+            if (error) { toast('Update failed: ' + error.message, 'danger'); return; }
+            toast('Budget updated.');
+          } else {
+            const { error } = await sb.from('auth_bill_budgets').insert({ user_id: uid, project_id: pid, cap, used, currency: 'USD' });
+            if (error) { toast('Insert failed: ' + error.message, 'danger'); return; }
+            toast('Budget created.');
+          }
+          bootstrap.Modal.getInstance(document.getElementById('budgetModal')).hide();
+          await loadBudgets();
+        });
+
+        document.getElementById('txn-form').addEventListener('submit', async e => {
+          e.preventDefault();
+          const uid  = document.getElementById('txn-client-id').value;
+          const pid  = document.getElementById('txn-project-id').value;
+          const desc = document.getElementById('txn-description').value.trim();
+          const amt  = parseFloat(document.getElementById('txn-amount').value);
+          const date = document.getElementById('txn-date').value;
+          if (!uid || !pid) { toast('Select client and project.', 'warning'); return; }
+          const { error } = await sb.from('auth_bill_transactions').insert({ user_id: uid, project_id: pid, description: desc, amount: amt, date });
+          if (error) { toast('Insert failed: ' + error.message, 'danger'); return; }
+          // update used amount on budget
+          const budget = budgets.find(b => b.project_id === pid);
+          if (budget) {
+            await sb.from('auth_bill_budgets').update({ used: (budget.used || 0) + amt }).eq('id', budget.id);
+          }
+          toast('Transaction logged.');
+          document.getElementById('txn-form').reset();
+          refreshBillingClientSelect();
+          await loadBudgets();
+        });
+      });
+
+      async function deleteBudget(id) {
+        if (!confirm('Delete this budget?')) return;
+        const { error } = await sb.from('auth_bill_budgets').delete().eq('id', id);
+        if (error) { toast('Delete failed: ' + error.message, 'danger'); return; }
+        toast('Budget deleted.');
+        await loadBudgets();
+      }
+
+      async function deleteTxn(id) {
+        if (!confirm('Delete this transaction? Budget total will NOT auto-adjust.')) return;
+        const { error } = await sb.from('auth_bill_transactions').delete().eq('id', id);
+        if (error) { toast('Delete failed: ' + error.message, 'danger'); return; }
+        toast('Transaction deleted.');
+        await loadBudgets();
+      }
+
+      // ══════════════════════════════════════════════════════════════
+      //  TICKETS
+      // ══════════════════════════════════════════════════════════════
+      let allTickets = [];
+
+      async function loadTickets() {
+        const { data, error } = await sb
+          .from('auth_tkt_tickets')
+          .select('*, auth_usr_profiles(full_name, email)')
+          .order('created_at', { ascending: false });
+        if (error) { toast('Error loading tickets: ' + error.message, 'danger'); return; }
+        allTickets = data || [];
+        renderTickets();
+      }
+
+      function refreshTicketClientSelect() {
+        const sel = document.getElementById('tkt-client-filter');
+        if (sel) sel.innerHTML = '<option value="">All Clients</option>' + clientOptions();
+      }
+
+      function renderTickets(filterClient) {
+        const tbody = document.getElementById('tkt-tbody');
+        tbody.innerHTML = '';
+        let list = allTickets;
+        if (filterClient) list = list.filter(t => t.user_id === filterClient);
+        list.forEach(t => {
+          const client = t.auth_usr_profiles;
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td class="fw-semibold">${t.title || '—'}</td>
+            <td>${client?.full_name || client?.email || '—'}</td>
+            <td>${badge(t.status, TICKET_COLORS)}</td>
+            <td class="text-muted small">${t.body || ''}</td>
+            <td class="text-muted">${fmtDate(t.created_at)}</td>
+            <td class="text-muted">${fmtDate(t.last_response_at)}</td>
+            <td>
+              <button class="btn btn-sm btn-outline-primary me-1" onclick="openReplyTicket('${t.id}')">Reply / Edit</button>
+              <button class="btn btn-sm btn-outline-danger" onclick="deleteTicket('${t.id}')">Delete</button>
+            </td>`;
+          tbody.appendChild(tr);
+        });
+      }
+
+      function openNewTicket() {
+        document.getElementById('tkt-modal-title').textContent = 'New Ticket';
+        document.getElementById('tkt-form').reset();
+        document.getElementById('tkt-id-input').value = '';
+        refreshTicketClientSelect();
+        new bootstrap.Modal(document.getElementById('tktModal')).show();
+      }
+
+      function openReplyTicket(id) {
+        const t = allTickets.find(x => x.id === id);
+        if (!t) return;
+        document.getElementById('tkt-modal-title').textContent = 'Edit / Reply — ' + (t.title || '');
+        document.getElementById('tkt-id-input').value     = t.id;
+        refreshTicketClientSelect();
+        document.getElementById('tkt-client-id').value   = t.user_id || '';
+        document.getElementById('tkt-title').value       = t.title || '';
+        document.getElementById('tkt-status').value      = t.status || 'Open';
+        document.getElementById('tkt-body').value        = t.body || '';
+        document.getElementById('tkt-reply').value       = '';
+        new bootstrap.Modal(document.getElementById('tktModal')).show();
+      }
+
+      document.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('tkt-client-filter').addEventListener('change', function() {
+          renderTickets(this.value || null);
+        });
+
+        document.getElementById('tkt-form').addEventListener('submit', async e => {
+          e.preventDefault();
+          const id     = document.getElementById('tkt-id-input').value;
+          const uid    = document.getElementById('tkt-client-id').value;
+          const title  = document.getElementById('tkt-title').value.trim();
+          const status = document.getElementById('tkt-status').value;
+          const body   = document.getElementById('tkt-body').value.trim();
+          const reply  = document.getElementById('tkt-reply').value.trim();
+          if (!uid) { toast('Select a client.', 'warning'); return; }
+          const now = new Date().toISOString();
+          if (id) {
+            const updates = { status, last_response_at: now, has_unread: true };
+            if (reply) updates.staff_reply = reply;
+            const { error } = await sb.from('auth_tkt_tickets').update(updates).eq('id', id);
+            if (error) { toast('Update failed: ' + error.message, 'danger'); return; }
+            toast('Ticket updated. Client will see unread indicator.');
+          } else {
+            const { error } = await sb.from('auth_tkt_tickets').insert({
+              user_id: uid, title, status, body, created_at: now, has_unread: false
+            });
+            if (error) { toast('Insert failed: ' + error.message, 'danger'); return; }
+            toast('Ticket created.');
+          }
+          bootstrap.Modal.getInstance(document.getElementById('tktModal')).hide();
+          await loadTickets();
+        });
+      });
+
+      async function deleteTicket(id) {
+        if (!confirm('Delete this ticket?')) return;
+        const { error } = await sb.from('auth_tkt_tickets').delete().eq('id', id);
+        if (error) { toast('Delete failed: ' + error.message, 'danger'); return; }
+        toast('Ticket deleted.');
+        await loadTickets();
+      }
+
+      // ══════════════════════════════════════════════════════════════
+      //  INIT
+      // ══════════════════════════════════════════════════════════════
+      document.addEventListener('DOMContentLoaded', async () => {
+        // tab nav
+        document.querySelectorAll('.nav-link[data-section]').forEach(link => {
+          link.addEventListener('click', e => {
+            e.preventDefault();
+            showSection(link.dataset.section);
+          });
+        });
+        showSection('clients');
+        await loadClients();
+        await loadProjects();
+        await loadBudgets();
+        await loadTickets();
+      });
+    </script>
+
+    <!-- ════════════════ PAGE SHELL ════════════════ -->
+    <div class="page">
+      <header class="navbar navbar-expand-md d-print-none">
+        <div class="container-xl">
+          <span class="h2 fw-bold text-primary me-2">Phaze17</span>
+          <span class="badge bg-red-lt text-red ms-1">ADMIN — LOCAL ONLY</span>
+          <div class="navbar-nav flex-row ms-auto">
+            <span class="text-muted small">Service Role Active</span>
+          </div>
+        </div>
+      </header>
+
+      <div class="page-wrapper">
+        <div class="page-header d-print-none">
+          <div class="container-xl">
+            <ul class="nav nav-tabs">
+              <li class="nav-item"><a href="#" class="nav-link" data-section="clients">Clients</a></li>
+              <li class="nav-item"><a href="#" class="nav-link" data-section="projects">Projects</a></li>
+              <li class="nav-item"><a href="#" class="nav-link" data-section="billing">Billing</a></li>
+              <li class="nav-item"><a href="#" class="nav-link" data-section="tickets">Tickets</a></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="page-body">
+          <div class="container-xl">
+
+            <!-- ── CLIENTS ─────────────────────────────────────────── -->
+            <div class="section" id="sec-clients">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <h3 class="mb-0">Clients</h3>
+                <button class="btn btn-primary" onclick="openNewClient()">+ New Client</button>
+              </div>
+              <div class="row row-cards" id="client-grid"></div>
+              <div id="client-empty" class="text-center text-muted py-5 d-none">No clients yet.</div>
+            </div>
+
+            <!-- ── PROJECTS ────────────────────────────────────────── -->
+            <div class="section" id="sec-projects">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <h3 class="mb-0">Projects</h3>
+                <button class="btn btn-primary" onclick="openNewProject()">+ New Project</button>
+              </div>
+              <div class="card">
+                <div class="table-responsive">
+                  <table class="table table-vcenter card-table">
+                    <thead><tr><th>Name</th><th>Client</th><th>Status</th><th>Description</th><th>Created</th><th></th></tr></thead>
+                    <tbody id="proj-tbody"></tbody>
+                  </table>
+                </div>
+              </div>
+              <div id="proj-empty" class="text-center text-muted py-5 d-none">No projects yet.</div>
+            </div>
+
+            <!-- ── BILLING ─────────────────────────────────────────── -->
+            <div class="section" id="sec-billing">
+              <div class="row g-4">
+                <div class="col-lg-7">
+                  <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h3 class="mb-0">Budgets</h3>
+                    <button class="btn btn-primary" onclick="openNewBudget()">+ New Budget</button>
+                  </div>
+                  <div class="card">
+                    <div class="table-responsive">
+                      <table class="table table-vcenter card-table">
+                        <thead><tr><th>Project</th><th>Client</th><th>Cap</th><th>Used</th><th>Usage</th><th></th></tr></thead>
+                        <tbody id="budget-tbody"></tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-lg-5">
+                  <h3 class="mb-3">Log Transaction</h3>
+                  <div class="card">
+                    <div class="card-body">
+                      <form id="txn-form">
+                        <div class="mb-3">
+                          <label class="form-label">Client</label>
+                          <select id="txn-client-id" class="form-select"><option value="">— Select Client —</option></select>
+                        </div>
+                        <div class="mb-3">
+                          <label class="form-label">Project</label>
+                          <select id="txn-project-id" class="form-select"><option value="">— Select Project —</option></select>
+                        </div>
+                        <div class="mb-3">
+                          <label class="form-label">Description</label>
+                          <input id="txn-description" type="text" class="form-control" placeholder="e.g. Phase 1 design work" required />
+                        </div>
+                        <div class="row g-2 mb-3">
+                          <div class="col">
+                            <label class="form-label">Amount ($)</label>
+                            <input id="txn-amount" type="number" step="0.01" class="form-control" placeholder="0.00" required />
+                          </div>
+                          <div class="col">
+                            <label class="form-label">Date</label>
+                            <input id="txn-date" type="date" class="form-control" required />
+                          </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Log Transaction</button>
+                      </form>
+                    </div>
+                  </div>
+                  <!-- recent transactions -->
+                  <h5 class="mt-4 mb-2">Recent Transactions</h5>
+                  <div class="card">
+                    <div class="table-responsive">
+                      <table class="table table-sm table-vcenter card-table">
+                        <thead><tr><th>Date</th><th>Project</th><th>Client</th><th>Description</th><th>Amount</th><th></th></tr></thead>
+                        <tbody id="txn-tbody"></tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- ── TICKETS ─────────────────────────────────────────── -->
+            <div class="section" id="sec-tickets">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <div class="d-flex align-items-center gap-3">
+                  <h3 class="mb-0">Tickets</h3>
+                  <select id="tkt-client-filter" class="form-select form-select-sm" style="width:200px">
+                    <option value="">All Clients</option>
+                  </select>
+                </div>
+                <button class="btn btn-primary" onclick="openNewTicket()">+ New Ticket</button>
+              </div>
+              <div class="card">
+                <div class="table-responsive">
+                  <table class="table table-vcenter card-table">
+                    <thead><tr><th>Title</th><th>Client</th><th>Status</th><th>Body</th><th>Opened</th><th>Last Response</th><th></th></tr></thead>
+                    <tbody id="tkt-tbody"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════ MODALS ════════════════ -->
+
+    <!-- Client Modal -->
+    <div class="modal modal-blur fade" id="clientModal" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="client-modal-title">Client</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <form id="client-form">
+            <div class="modal-body">
+              <input type="hidden" id="client-id-input" />
+              <div class="mb-3">
+                <label class="form-label">Email <span class="text-danger">*</span></label>
+                <input id="client-email" type="email" class="form-control" required />
+              </div>
+              <div id="client-password-wrap" class="mb-3">
+                <label class="form-label">Password <span class="text-danger">*</span></label>
+                <input id="client-password" type="password" class="form-control" autocomplete="new-password" />
+                <div class="form-hint">Set a temporary password for the client.</div>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Full Name</label>
+                <input id="client-name" type="text" class="form-control" />
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Company</label>
+                <input id="client-company" type="text" class="form-control" />
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Phone</label>
+                <input id="client-phone" type="text" class="form-control" />
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+              <button type="submit" class="btn btn-primary">Save</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Project Modal -->
+    <div class="modal modal-blur fade" id="projModal" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="proj-modal-title">Project</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <form id="proj-form">
+            <div class="modal-body">
+              <input type="hidden" id="proj-id-input" />
+              <div class="mb-3">
+                <label class="form-label">Client <span class="text-danger">*</span></label>
+                <select id="proj-client-id" class="form-select"><option value="">— Select Client —</option></select>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Project Name <span class="text-danger">*</span></label>
+                <input id="proj-name" type="text" class="form-control" required />
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Status</label>
+                <select id="proj-status" class="form-select">
+                  <option>Active</option><option>Paused</option><option>In Review</option><option>Complete</option><option>Cancelled</option>
+                </select>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Description</label>
+                <textarea id="proj-description" class="form-control" rows="3"></textarea>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+              <button type="submit" class="btn btn-primary">Save</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Budget Modal -->
+    <div class="modal modal-blur fade" id="budgetModal" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Budget</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <form id="budget-form">
+            <div class="modal-body">
+              <input type="hidden" id="budget-id-input" />
+              <div class="mb-3">
+                <label class="form-label">Client <span class="text-danger">*</span></label>
+                <select id="budget-client-id" class="form-select"><option value="">— Select Client —</option></select>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Project <span class="text-danger">*</span></label>
+                <select id="budget-project-id" class="form-select"><option value="">— Select Project —</option></select>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Budget Cap ($)</label>
+                <input id="budget-cap" type="number" step="0.01" class="form-control" required />
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Amount Used ($)</label>
+                <input id="budget-used" type="number" step="0.01" class="form-control" value="0" />
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+              <button type="submit" class="btn btn-primary">Save</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ticket Modal -->
+    <div class="modal modal-blur fade" id="tktModal" tabindex="-1">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="tkt-modal-title">Ticket</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <form id="tkt-form">
+            <div class="modal-body">
+              <input type="hidden" id="tkt-id-input" />
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label class="form-label">Client <span class="text-danger">*</span></label>
+                  <select id="tkt-client-id" class="form-select"><option value="">— Select Client —</option></select>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Status</label>
+                  <select id="tkt-status" class="form-select">
+                    <option>Open</option><option>In Progress</option><option>Waiting on You</option><option>Resolved</option>
+                  </select>
+                </div>
+                <div class="col-12">
+                  <label class="form-label">Title <span class="text-danger">*</span></label>
+                  <input id="tkt-title" type="text" class="form-control" required />
+                </div>
+                <div class="col-12">
+                  <label class="form-label">Ticket Body</label>
+                  <textarea id="tkt-body" class="form-control" rows="3" placeholder="Issue description..."></textarea>
+                </div>
+                <div class="col-12">
+                  <label class="form-label">Staff Reply <span class="text-muted small">(sets unread dot on client portal)</span></label>
+                  <textarea id="tkt-reply" class="form-control" rows="3" placeholder="Your response..."></textarea>
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+              <button type="submit" class="btn btn-primary">Save</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast container -->
+    <div id="toast-wrap"></div>
+
+    <script src="./dist/js/tabler.min.js?1752393270" defer></script>
+  </body>
+</html>
