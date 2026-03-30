@@ -1,0 +1,354 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Phaze17 Client Portal</title>
+    <link href="./dist/css/tabler.css?1752393270" rel="stylesheet" />
+    <link href="./dist/css/tabler-themes.css?1752393270" rel="stylesheet" />
+    <style>
+      @import url("https://rsms.me/inter/inter.css");
+      .budget-bar-warning .progress-bar { background-color: var(--tblr-warning) !important; }
+      .budget-bar-danger .progress-bar  { background-color: var(--tblr-danger)  !important; }
+      .unread-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--tblr-primary); display: inline-block; margin-right: 6px; }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  </head>
+  <body>
+    <script src="./dist/js/tabler-theme.min.js?1752393270"></script>
+
+    <!-- AUTH GUARD: runs before page paints -->
+    <script>
+      const SUPABASE_URL      = 'https://ygjcmbihlaensweosszj.supabase.co';
+      const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlnamNtYmlobGFlbnN3ZW9zc3pqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU5NjE1OTcsImV4cCI6MjA4MTUzNzU5N30.mLvwmZJoEXcWcqmbZGC0mNa12wPx9fonl7tv6NvZcTg';
+      const { createClient } = supabase;
+      const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+      let _session = null;
+
+      (async () => {
+        const { data: { session } } = await _supabase.auth.getSession();
+        if (!session) {
+          window.location.href = './sign-in-cover.html';
+        } else {
+          _session = session;
+        }
+      })();
+    </script>
+
+    <div class="page" id="app" style="display:none">
+
+      <!-- NAVBAR -->
+      <header class="navbar navbar-expand-md d-print-none">
+        <div class="container-xl">
+          <span class="h2 fw-bold text-primary me-3">Phaze17</span>
+          <span class="text-muted small">Client Portal</span>
+          <div class="navbar-nav flex-row order-md-last ms-auto align-items-center gap-3">
+            <span class="text-secondary small" id="nav-user-email"></span>
+            <button class="btn btn-outline-secondary btn-sm" id="signout-btn">Sign out</button>
+          </div>
+        </div>
+      </header>
+
+      <!-- PAGE WRAPPER -->
+      <div class="page-wrapper">
+        <div class="page-header d-print-none">
+          <div class="container-xl">
+            <div class="row g-2 align-items-center">
+              <div class="col">
+                <div class="page-pretitle">Welcome back</div>
+                <h2 class="page-title" id="page-welcome">Dashboard</h2>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="page-body">
+          <div class="container-xl">
+
+            <!-- STAT CARDS -->
+            <div class="row row-deck row-cards mb-4">
+              <div class="col-sm-6 col-lg-3">
+                <div class="card">
+                  <div class="card-body">
+                    <div class="subheader">Total Projects</div>
+                    <div class="h1 mb-0" id="stat-projects">—</div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-sm-6 col-lg-3">
+                <div class="card">
+                  <div class="card-body">
+                    <div class="subheader">Active Projects</div>
+                    <div class="h1 mb-0" id="stat-active">—</div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-sm-6 col-lg-3">
+                <div class="card">
+                  <div class="card-body">
+                    <div class="subheader">Open Tickets</div>
+                    <div class="h1 mb-0" id="stat-tickets">—</div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-sm-6 col-lg-3">
+                <div class="card">
+                  <div class="card-body">
+                    <div class="subheader">Budget Used</div>
+                    <div class="h1 mb-0" id="stat-budget">—</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- PROJECTS + BUDGET ROW -->
+            <div class="row row-deck row-cards mb-4">
+
+              <!-- PROJECTS -->
+              <div class="col-lg-7">
+                <div class="card h-100">
+                  <div class="card-header">
+                    <h3 class="card-title">Projects</h3>
+                  </div>
+                  <div class="card-body p-0">
+                    <div id="projects-list" class="list-group list-group-flush">
+                      <!-- injected by JS -->
+                    </div>
+                    <div id="projects-empty" class="text-center text-muted py-5 d-none">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="mb-2 text-muted"><path d="M12 3l8 4.5l0 9l-8 4.5l-8 -4.5l0 -9l8 -4.5"/><path d="M12 12l8 -4.5"/><path d="M12 12l0 9"/><path d="M12 12l-8 -4.5"/></svg>
+                      <div>No projects yet.</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- BUDGET -->
+              <div class="col-lg-5">
+                <div class="card h-100">
+                  <div class="card-header">
+                    <h3 class="card-title">Budget Overview</h3>
+                  </div>
+                  <div class="card-body" id="budget-body">
+                    <div id="budget-list"><!-- injected --></div>
+                    <div id="budget-empty" class="text-center text-muted py-5 d-none">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="mb-2 text-muted"><path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"/><path d="M9 10l.01 0"/><path d="M15 10l.01 0"/><path d="M9.5 15a3.5 3.5 0 0 0 5 0"/></svg>
+                      <div>No budget data on file.</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- TICKETS -->
+            <div class="row row-deck row-cards">
+              <div class="col-12">
+                <div class="card">
+                  <div class="card-header">
+                    <h3 class="card-title">Support Tickets</h3>
+                  </div>
+                  <div class="table-responsive" id="tickets-table-wrap">
+                    <table class="table table-vcenter card-table">
+                      <thead>
+                        <tr>
+                          <th>Ticket</th>
+                          <th>Status</th>
+                          <th>Opened</th>
+                          <th>Last Response</th>
+                        </tr>
+                      </thead>
+                      <tbody id="tickets-tbody">
+                        <!-- injected -->
+                      </tbody>
+                    </table>
+                  </div>
+                  <div id="tickets-empty" class="text-center text-muted py-5 d-none">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="mb-2 text-muted"><path d="M4 21v-13a3 3 0 0 1 3 -3h10a3 3 0 0 1 3 3v6a3 3 0 0 1 -3 3h-9l-4 4"/><path d="M8 10l8 0"/><path d="M8 14l6 0"/></svg>
+                    <div>No open tickets. You're all good! 🎉</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="./dist/js/tabler.min.js?1752393270" defer></script>
+
+    <script>
+      const STATUS_COLORS = {
+        'active':     'bg-green-lt text-green',
+        'paused':     'bg-yellow-lt text-yellow',
+        'in review':  'bg-blue-lt text-blue',
+        'complete':   'bg-muted-lt text-muted',
+        'cancelled':  'bg-red-lt text-red',
+      };
+
+      const TICKET_STATUS_COLORS = {
+        'open':              'bg-red-lt text-red',
+        'waiting on you':    'bg-yellow-lt text-yellow',
+        'in progress':       'bg-blue-lt text-blue',
+        'resolved':          'bg-green-lt text-green',
+      };
+
+      function statusBadge(status, map) {
+        const s = (status || '').toLowerCase();
+        const cls = map[s] || 'bg-secondary-lt text-secondary';
+        return `<span class="badge ${cls}">${status}</span>`;
+      }
+
+      function fmtDate(iso) {
+        if (!iso) return '—';
+        return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      }
+
+      function fmtCurrency(n, currency) {
+        return new Intl.NumberFormat('en-US', { style: 'currency', currency: currency || 'USD', maximumFractionDigits: 0 }).format(n || 0);
+      }
+
+      function budgetBarClass(pct) {
+        if (pct >= 90) return 'budget-bar-danger';
+        if (pct >= 70) return 'budget-bar-warning';
+        return '';
+      }
+
+      async function loadPortal() {
+        // Wait for session to resolve
+        let attempts = 0;
+        while (!_session && attempts < 20) {
+          await new Promise(r => setTimeout(r, 100));
+          attempts++;
+        }
+        if (!_session) return;
+
+        const uid = _session.user.id;
+        const email = _session.user.email;
+
+        // Show page now that we have a session
+        document.getElementById('app').style.display = '';
+        document.getElementById('nav-user-email').textContent = email;
+        document.getElementById('page-welcome').textContent = email.split('@')[0];
+
+        // Sign out
+        document.getElementById('signout-btn').addEventListener('click', async () => {
+          await _supabase.auth.signOut();
+          window.location.href = './sign-in-cover.html';
+        });
+
+        // ── PROJECTS ──────────────────────────────────────────────────
+        const { data: projects, error: projErr } = await _supabase
+          .from('auth_proj_projects')
+          .select('*')
+          .eq('user_id', uid)
+          .order('created_at', { ascending: false });
+
+        const projList  = document.getElementById('projects-list');
+        const projEmpty = document.getElementById('projects-empty');
+
+        if (!projects || projects.length === 0) {
+          projList.classList.add('d-none');
+          projEmpty.classList.remove('d-none');
+          document.getElementById('stat-projects').textContent = '0';
+          document.getElementById('stat-active').textContent   = '0';
+        } else {
+          const active = projects.filter(p => (p.status || '').toLowerCase() === 'active');
+          document.getElementById('stat-projects').textContent = projects.length;
+          document.getElementById('stat-active').textContent   = active.length;
+          projects.forEach(p => {
+            const item = document.createElement('div');
+            item.className = 'list-group-item';
+            item.innerHTML = `
+              <div class="row align-items-center">
+                <div class="col">
+                  <div class="fw-semibold">${p.name || 'Unnamed Project'}</div>
+                  <div class="text-muted small">${p.description || ''}</div>
+                </div>
+                <div class="col-auto">${statusBadge(p.status || 'Unknown', STATUS_COLORS)}</div>
+              </div>`;
+            projList.appendChild(item);
+          });
+        }
+
+        // ── BUDGETS ───────────────────────────────────────────────────
+        const { data: budgets } = await _supabase
+          .from('auth_bill_budgets')
+          .select('*, auth_proj_projects(name)')
+          .eq('user_id', uid);
+
+        const budgetList  = document.getElementById('budget-list');
+        const budgetEmpty = document.getElementById('budget-empty');
+
+        let totalCap = 0, totalUsed = 0;
+
+        if (!budgets || budgets.length === 0) {
+          budgetEmpty.classList.remove('d-none');
+          document.getElementById('stat-budget').textContent = '—';
+        } else {
+          budgets.forEach(b => {
+            const cap  = b.cap  || 0;
+            const used = b.used || 0;
+            const pct  = cap > 0 ? Math.round((used / cap) * 100) : 0;
+            totalCap  += cap;
+            totalUsed += used;
+            const barClass = budgetBarClass(pct);
+            const projName = b.auth_proj_projects?.name || 'General Budget';
+            const el = document.createElement('div');
+            el.className = 'mb-4';
+            el.innerHTML = `
+              <div class="d-flex justify-content-between mb-1">
+                <span class="fw-semibold">${projName}</span>
+                <span class="text-muted small">${fmtCurrency(used, b.currency)} / ${fmtCurrency(cap, b.currency)}</span>
+              </div>
+              <div class="progress progress-sm ${barClass}">
+                <div class="progress-bar" style="width:${pct}%" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100"></div>
+              </div>
+              <div class="d-flex justify-content-between mt-1">
+                <span class="text-muted small">${pct}% used</span>
+                <span class="text-muted small">${fmtCurrency(cap - used, b.currency)} remaining</span>
+              </div>`;
+            budgetList.appendChild(el);
+          });
+          const totalPct = totalCap > 0 ? Math.round((totalUsed / totalCap) * 100) : 0;
+          document.getElementById('stat-budget').textContent = totalPct + '%';
+        }
+
+        // ── TICKETS ───────────────────────────────────────────────────
+        const { data: tickets } = await _supabase
+          .from('auth_tkt_tickets')
+          .select('*')
+          .eq('user_id', uid)
+          .order('created_at', { ascending: false });
+
+        const tbody       = document.getElementById('tickets-tbody');
+        const ticketEmpty = document.getElementById('tickets-empty');
+        const tableWrap   = document.getElementById('tickets-table-wrap');
+
+        const openTickets = (tickets || []).filter(t => (t.status || '').toLowerCase() !== 'resolved');
+        document.getElementById('stat-tickets').textContent = openTickets.length;
+
+        if (!tickets || tickets.length === 0) {
+          tableWrap.classList.add('d-none');
+          ticketEmpty.classList.remove('d-none');
+        } else {
+          tickets.forEach(t => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td>
+                ${t.has_unread ? '<span class="unread-dot"></span>' : ''}
+                <span class="${t.has_unread ? 'fw-semibold' : ''}">${t.title || 'Untitled Ticket'}</span>
+              </td>
+              <td>${statusBadge(t.status || 'Open', TICKET_STATUS_COLORS)}</td>
+              <td class="text-muted">${fmtDate(t.created_at)}</td>
+              <td class="text-muted">${fmtDate(t.last_response_at)}</td>`;
+            tbody.appendChild(tr);
+          });
+        }
+      }
+
+      loadPortal();
+    </script>
+  </body>
+</html>
